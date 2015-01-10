@@ -43,15 +43,15 @@ char* ErrorString(const int errorCode);
 
 struct LoginPacket
 {
-	int             m_UniqueKey;
-	ChannelNumber   m_ChannelNumber;
-	ID              m_ID;
-	int             m_LossRate;
+    int             m_UniqueKey;
+    ChannelNumber   m_ChannelNumber;
+    ID              m_ID;
+    int             m_LossRate;
 };
 
 struct NormalPacket
 {
-	ChannelNumber   m_ChannelNumber;
-	ID              m_ID;
-	char            m_Data[MAX_PACKET_SIZE - sizeof(ChannelNumber) - sizeof(ID)];
+    ChannelNumber   m_ChannelNumber;
+    ID              m_ID;
+    char            m_Data[MAX_PACKET_SIZE - sizeof(ChannelNumber) - sizeof(ID)];
 };

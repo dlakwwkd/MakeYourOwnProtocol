@@ -2,12 +2,14 @@
 class ChannelMananger
 {
 public:
-	static ChannelMananger* GetInstance(){
+	static ChannelMananger* GetInstance()
+    {
 		if (instance == nullptr)
 			instance = new ChannelMananger();
 		return instance;
 	}
-	static void FreeInstance(){
+	static void FreeInstance()
+    {
 		if (instance != nullptr)
 			delete instance;
 		instance = nullptr;
@@ -19,7 +21,8 @@ public:
 	bool IsRightID(ChannelNumber channelNumber, ID id);
 	bool IsLogin(ChannelNumber channelNumber, ID id, struct sockaddr_in& clientaddr);
 	
-	void SetPacketMissingRate(ChannelNumber channelNumber, int percentage){
+	void SetPacketMissingRate(ChannelNumber channelNumber, int percentage)
+    {
 		m_PacketMissingRateList[channelNumber] = (percentage >= 0 && percentage <= 100) ? percentage : 0;
 	}
 
@@ -30,7 +33,8 @@ public:
 		return m_PacketMissingRateList[channelNumber];
 	}
 
-	std::pair<SessionList::iterator, SessionList::iterator> GetChannelUsers(ChannelNumber channelNumber){
+	std::pair<SessionList::iterator, SessionList::iterator> GetChannelUsers(ChannelNumber channelNumber)
+    {
 		return m_SessionList.equal_range(channelNumber);
 	}
 

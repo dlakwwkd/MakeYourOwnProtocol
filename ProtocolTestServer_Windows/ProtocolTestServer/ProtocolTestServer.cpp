@@ -35,15 +35,14 @@ int main(int argc, char **argv)
 	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serveraddr.sin_port = htons(PORT);
 
-	state = bind(sockfd, (struct sockaddr *)&serveraddr,
-		sizeof(serveraddr));
+	state = bind(sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
 	if (state == -1)
 	{
 		perror("bind error : ");
 		exit(0);
 	}
 
-	while (1)
+	while (true)
 	{
 		n = recvfrom(sockfd, buf, MAX_PACKET_SIZE, 0, (struct sockaddr *)&clientaddr, &clilen);
 
