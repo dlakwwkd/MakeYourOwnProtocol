@@ -10,7 +10,7 @@
 
 #define MAX_DATA_SIZE   (500)
 
-#define CONNECT_TIMEOUT 5
+#define CONNECT_TIMEOUT 2
 
 #define NUM_STATE   3
 #define NUM_EVENT   8
@@ -147,11 +147,11 @@ state_action p_FSM[NUM_STATE][NUM_EVENT] =
 
   // - CON_sent state
   {{ passive_con, CONNECTED }, { close_con, wait_CON }, { report_connect, CONNECTED }, { NULL,      CON_sent },
-   { NULL,        CON_sent },  { close_con, wait_CON }, { NULL,           CON_sent },  { close_con, wait_CON }},
+   { NULL,        CON_sent },  { close_con, wait_CON }, { NULL,           CON_sent },  { active_con, CON_sent }},
 
   // - CONNECTED state
-  {{ NULL, CONNECTED },        { close_con, wait_CON }, { NULL,      CONNECTED },      { report_data, CONNECTED },
-   { NULL, CONNECTED },        { close_con, wait_CON }, { send_data, CONNECTED },      { NULL,        CONNECTED }},
+  {{ passive_con, CONNECTED }, { close_con, wait_CON }, { NULL,      CONNECTED },      { report_data, CONNECTED },
+   { NULL,        CONNECTED }, { close_con, wait_CON }, { send_data, CONNECTED },      { NULL,        CONNECTED }},
 };
 
 int data_count = 0;
