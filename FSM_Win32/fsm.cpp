@@ -11,19 +11,20 @@
 #define MAX_DATA_SIZE   (500)
 
 #define CONNECT_TIMEOUT 2
+#define DATA_TIMEOUT    3
 
-#define NUM_STATE   3
+#define NUM_STATE   4
 #define NUM_EVENT   8
 
-enum pakcet_type { F_CON = 0, F_FIN = 1, F_ACK = 2, F_DATA = 3 };   // Packet Type
-enum proto_state { wait_CON = 0, CON_sent = 1, CONNECTED = 2 };     // States
+enum pakcet_type { F_CON = 0, F_FIN = 1, F_ACK = 2, F_DATA = 3 };               // Packet Type
+enum proto_state { wait_CON = 0, CON_sent = 1, CONNECTED = 2, DATA_sent = 3 };  // States
 
 // Events
 enum proto_event { RCV_CON = 0, RCV_FIN = 1, RCV_ACK = 2, RCV_DATA = 3,
                    CONNECT = 4, CLOSE = 5,   SEND = 6,    TIMEOUT = 7 };
 
 char *pkt_name[] = { "F_CON", "F_FIN", "F_ACK", "F_DATA" };
-char *st_name[] =  { "wait_CON", "CON_sent", "CONNECTED" };
+char *st_name[] =  { "wait_CON", "CON_sent", "CONNECTED", "DATA_sent" };
 char *ev_name[] =  { "RCV_CON", "RCV_FIN", "RCV_ACK", "RCV_DATA",
                      "CONNECT", "CLOSE",   "SEND",    "TIMEOUT"   };
 
@@ -106,6 +107,11 @@ static void report_connect(void *p)
     printf("Connected\n");
 }
 
+static void report_data_ack(void *p)
+{
+    stop_timer();
+}
+
 static void passive_con(void *p)
 {
     send_packet(F_ACK, NULL, 0);
@@ -128,10 +134,12 @@ static void send_data(void *p)
 {
     printf("Send Data to peer '%s' size:%d\n", ((p_event*)p)->packet.data, ((p_event*)p)->size);
     send_packet(F_DATA, (p_event *)p, ((p_event *)p)->size);
+    set_timer(DATA_TIMEOUT);
 }
 
 static void report_data(void *p)
 {
+    send_packet(F_ACK, NULL, 0);
     printf("Data Arrived data='%s' size:%d\n", ((p_event*)p)->packet.data, ((p_event*)p)->packet.size);
 }
 
@@ -146,12 +154,16 @@ state_action p_FSM[NUM_STATE][NUM_EVENT] =
    { active_con,  CON_sent },  { NULL, wait_CON },      { NULL, wait_CON },            { NULL, wait_CON }},
 
   // - CON_sent state
-  {{ passive_con, CONNECTED }, { close_con, wait_CON }, { report_connect, CONNECTED }, { NULL,      CON_sent },
-   { NULL,        CON_sent },  { close_con, wait_CON }, { NULL,           CON_sent },  { active_con, CON_sent }},
+  {{ passive_con, CONNECTED }, { close_con, wait_CON }, { report_connect,  CONNECTED }, { NULL,      CON_sent },
+   { NULL,        CON_sent },  { close_con, wait_CON }, { NULL,            CON_sent },  { active_con, CON_sent }},
 
   // - CONNECTED state
-  {{ passive_con, CONNECTED }, { close_con, wait_CON }, { NULL,      CONNECTED },      { report_data, CONNECTED },
-   { NULL,        CONNECTED }, { close_con, wait_CON }, { send_data, CONNECTED },      { NULL,        CONNECTED }},
+  {{ passive_con, CONNECTED }, { close_con, wait_CON }, { NULL,            CONNECTED }, { report_data, CONNECTED },
+   { NULL,        CONNECTED }, { close_con, wait_CON }, { send_data,       DATA_sent }, { NULL,        CONNECTED }},
+
+  // - DATA_sent state
+  {{ NULL,        DATA_sent }, { close_con, wait_CON }, { report_data_ack, CONNECTED }, { report_data, DATA_sent },
+   { NULL,        DATA_sent }, { close_con, wait_CON }, { NULL,            DATA_sent }, { send_data,   DATA_sent }},
 };
 
 int data_count = 0;
